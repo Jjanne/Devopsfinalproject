@@ -1,55 +1,61 @@
-# azure-pipelines.yml
+# azure-pipelines.yml  (backend)
+
 trigger:
   branches:
     include:
-      - main
+      - jjanne        # use your branch while developing
+      # - main        # uncomment when you want main to trigger
 
 variables:
-  imageName: 'sddo-mvp'
-  azureSubscription: '<YOUR_AZURE_RESOURCE_MANAGER_SERVICE_CONNECTION_NAME>'  # set in pipeline variables
-  acrName: '<YOUR_ACR_NAME>'  # e.g. myacrregistry
-  resourceGroup: '<YOUR_RESOURCE_GROUP>'
-  webAppName: '<YOUR_WEBAPP_NAME>'
+  # ---- YOU MUST REPLACE THESE WITH REAL VALUES ----
+  azureSubscription: '<SERVICE_CONNECTION_TO_AZURE>'   # e.g. 'azure-subscription-sc'
+  acrServiceConnection: '<SERVICE_CONNECTION_TO_ACR>'  # e.g. 'myacr-sc'
+  acrName: '<YOUR_ACR_NAME>'                           # e.g. 'mydevopsacr'
+  webAppName: '<YOUR_WEBAPP_NAME>'                     # e.g. 'devopsfinal-backend'
+  imageName: 'devopsfinal-backend'                     # repo name inside ACR
 
 stages:
-- stage: Build
-  displayName: Build & Test
+
+# ---------- BUILD & TEST ----------
+- stage: BuildAndTest
+  displayName: 'Build & Test'
   jobs:
   - job: Build
+    displayName: 'Run tests and build image'
     pool:
       vmImage: 'ubuntu-latest'
     steps:
     - task: UsePythonVersion@0
       inputs:
-        versionSpec: '3.11'
+        versionSpec: '3.12'
+
     - script: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
-      displayName: 'Install dependencies'
+        pip install -r api/requirements.txt
+      displayName: 'Install Python dependencies'
+
     - script: |
         pytest -q
-      displayName: 'Run tests'
-    - script: |
-        docker build -t $(acrName).azurecr.io/$(imageName):$(Build.BuildId) .
-      displayName: 'Build Docker image'
-    - task: Docker@2
-      displayName: 'Push image to ACR'
-      inputs:
-        command: login
-        containerRegistry: '$(acrName)ServiceConnection' # configure service connection
-    - task: Docker@2
-      displayName: 'Push image'
-      inputs:
-        command: push
-        repository: '$(acrName).azurecr.io/$(imageName)'
-        tags: '$(Build.BuildId)'
+      displayName: 'Run pytest tests'
 
+    # Build & push Docker image to ACR
+    - task: Docker@2
+      displayName: 'Build and push Docker image to ACR'
+      inputs:
+        command: 'buildAndPush'
+        containerRegistry: '$(acrServiceConnection)'
+        repository: '$(imageName)'
+        dockerfile: '$(System.DefaultWorkingDirectory)/dockerfile'
+        tags: |
+          $(Build.BuildId)
+
+# ---------- DEPLOY ----------
 - stage: Deploy
-  displayName: Deploy to Azure
-  dependsOn: Build
+  displayName: 'Deploy to Azure Web App (Container)'
+  dependsOn: BuildAndTest
   jobs:
   - deployment: DeployWeb
-    displayName: Deploy Web App
+    displayName: 'Deploy container to Web App'
     environment: 'production'
     pool:
       vmImage: 'ubuntu-latest'
@@ -58,6 +64,7 @@ stages:
         deploy:
           steps:
           - task: AzureWebAppContainer@1
+            displayName: 'Deploy to Web App'
             inputs:
               azureSubscription: '$(azureSubscription)'
               appName: '$(webAppName)'
