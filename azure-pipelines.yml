@@ -1,2 +1,71 @@
+# azure-pipelines.yml  (backend)
 
+trigger:
+  branches:
+    include:
+      - jjanne        # use your branch while developing
+      # - main        # uncomment when you want main to trigger
 
+variables:
+  # ---- YOU MUST REPLACE THESE WITH REAL VALUES ----
+  azureSubscription: '<SERVICE_CONNECTION_TO_AZURE>'   # e.g. 'azure-subscription-sc'
+  acrServiceConnection: '<SERVICE_CONNECTION_TO_ACR>'  # e.g. 'myacr-sc'
+  acrName: '<YOUR_ACR_NAME>'                           # e.g. 'mydevopsacr'
+  webAppName: '<YOUR_WEBAPP_NAME>'                     # e.g. 'devopsfinal-backend'
+  imageName: 'devopsfinal-backend'                     # repo name inside ACR
+
+stages:
+
+# ---------- BUILD & TEST ----------
+- stage: BuildAndTest
+  displayName: 'Build & Test'
+  jobs:
+  - job: Build
+    displayName: 'Run tests and build image'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.12'
+
+    - script: |
+        python -m pip install --upgrade pip
+        pip install -r api/requirements.txt
+      displayName: 'Install Python dependencies'
+
+    - script: |
+        pytest -q
+      displayName: 'Run pytest tests'
+
+    # Build & push Docker image to ACR
+    - task: Docker@2
+      displayName: 'Build and push Docker image to ACR'
+      inputs:
+        command: 'buildAndPush'
+        containerRegistry: '$(acrServiceConnection)'
+        repository: '$(imageName)'
+        dockerfile: '$(System.DefaultWorkingDirectory)/dockerfile'
+        tags: |
+          $(Build.BuildId)
+
+# ---------- DEPLOY ----------
+- stage: Deploy
+  displayName: 'Deploy to Azure Web App (Container)'
+  dependsOn: BuildAndTest
+  jobs:
+  - deployment: DeployWeb
+    displayName: 'Deploy container to Web App'
+    environment: 'production'
+    pool:
+      vmImage: 'ubuntu-latest'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: AzureWebAppContainer@1
+            displayName: 'Deploy to Web App'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              appName: '$(webAppName)'
+              containers: '$(acrName).azurecr.io/$(imageName):$(Build.BuildId)'
