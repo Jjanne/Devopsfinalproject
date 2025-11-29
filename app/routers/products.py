@@ -54,11 +54,7 @@ def _slugify_category(name: str) -> str:
 
 @router.get("/categories")
 def list_categories():
-    """Return the list of unique product categories.
-
-    Frontend accepts either a list of strings OR a list of objects,
-    so we return objects with {id, name}.
-    """
+    """Return the list of unique product categories."""
     categories = sorted({p["category"] for p in PRODUCTS})
     return [
         {"id": _slugify_category(c), "name": c}
@@ -68,13 +64,8 @@ def list_categories():
 
 @router.get("/category/{category}")
 def get_products_by_category(category: str) -> List[dict]:
-    """Return products for a given category.
-
-    The frontend sends the *backend* name in the URL and may URL-encode it.
-    """
+    """Return products for a given category."""
     decoded = urllib.parse.unquote(category)
-
-    # Compare case-insensitively
     items = [p for p in PRODUCTS if p["category"].lower() == decoded.lower()]
 
     if not items:
