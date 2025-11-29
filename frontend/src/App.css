@@ -208,3 +208,41 @@ button:disabled {
   gap: 8px;
   margin-bottom: 8px;
 }
+
+/* Auth (login / create user) layout */
+
+.auth-center {
+  max-width: 480px;
+  margin: 36px auto 0;
+}
+
+.auth-card {
+  padding-top: 26px;
+  padding-bottom: 26px;
+}
+
+.form-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0 10px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--text-muted);
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(209, 213, 219, 0.9);
+}
