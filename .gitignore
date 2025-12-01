@@ -17,3 +17,5 @@ frontend/dist/
 # OS / misc
 .DS_Store
 EOF
+data.db
+logs/app.log
