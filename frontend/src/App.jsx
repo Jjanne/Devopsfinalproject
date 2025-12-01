@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import "./App.css";
 
-const BACKEND = "http://127.0.0.1:8001";
+const BACKEND = "https://devopsgroupproject-api-jjanne-amawf0a8fffcame0.spaincentral-01.azurewebsites.net";
 
 const PAGES = {
   AUTH: "auth",
