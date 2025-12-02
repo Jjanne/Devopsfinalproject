@@ -69,3 +69,6 @@ stages:
               azureSubscription: '$(azureSubscription)'
               appName: '$(webAppName)'
               containers: '$(acrName).azurecr.io/$(imageName):$(Build.BuildId)'
+
+
+

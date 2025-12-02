@@ -1,11 +1,12 @@
 import os
 import sys
-
-# Make sure we can import the app package
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
 from fastapi.testclient import TestClient
-from app.main import app
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
+from app.main import app  
 
 client = TestClient(app)
 
@@ -15,11 +16,15 @@ def test_list_categories():
     assert response.status_code == 200
 
     data = response.json()
-    # we expect a list of category objects with ids
-    assert isinstance(data, list)
 
-    ids = {item["id"] for item in data}
-    assert ids == {"electronics", "jewelery", "mens_clothing", "womens_clothing"}
+    # API returns a simple list of category strings
+    assert isinstance(data, list)
+    assert set(data) == {
+        "electronics",
+        "jewelery",
+        "men's clothing",
+        "women's clothing",
+    }
 
 
 def test_get_products_for_electronics():
@@ -27,8 +32,10 @@ def test_get_products_for_electronics():
     assert response.status_code == 200
 
     data = response.json()
-    # structure: {"category": "electronics", "products": [...]}
-    assert data["category"] == "electronics"
-    assert isinstance(data["products"], list)
-    # there should be at least one product from FakeStore
-    assert len(data["products"]) > 0
+
+    # API returns a list of product objects for this category
+    assert isinstance(data, list)
+    assert len(data) > 0
+
+    # every product should be in the "electronics" category
+    assert all(item["category"] == "electronics" for item in data)
