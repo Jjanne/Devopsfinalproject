@@ -1,41 +1,222 @@
-# SDDO Azure MVP
+# DevOps Shop — Final Project  
+### *IE University — Software Development and Devops*  
+Author: **Juliette Janne d’Othée**
 
-## Goal
-Small cloud-native web API (FastAPI) deployed to Azure with CI/CD, monitoring, and basic DB. Demo date: 2025-12-04.
+---
 
-## Architecture
-- FastAPI backend in a Docker container.
-- Container stored in Azure Container Registry (ACR).
-- Deployed to Azure App Service (Web App for Containers).
-- Optional: Azure SQL Database for persistent storage.
-- Application Insights for monitoring; logs shipped from container or enabled in App Service.
+# 1. Project Overview
 
-## How to run locally
-1. python -m venv .venv && source .venv/bin/activate
-2. pip install -r requirements.txt
-3. uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-4. Open http://localhost:8000/health
+**DevOps Shop** is a full-stack e-commerce demo application built for the **DevOps module final project** at IE University.  
+It demonstrates the integration of software engineering and cloud operations by implementing:
 
-## CI/CD (Azure DevOps)
-- `azure-pipelines.yml` contains pipeline:
-  - Install deps, run tests (pytest)
-  - Build Docker image
-  - Push to ACR
-  - Deploy image to App Service for Containers
+- A **FastAPI backend**
+- A **React (Vite) frontend**
+- **CI/CD pipelines** using Azure DevOps Pipelines
+- **Docker containerization**
+- **Deployment** to Azure Web App for Containers
+- A fully functional shop system (users → cart → orders)
 
-## Provisioning on Azure
-- Use `create-azure-resources.sh` for quick resource creation.
-- Configure ACR & Web App environment variables (DATABASE_URL, APPINSIGHTS_INSTRUMENTATIONKEY)
+The application lets users:
 
-## Monitoring
-- Add Application Insights via Azure Portal or `az monitor` CLI.
-- App logs printed to stdout are captured by App Service and Application Insights.
-- Create dashboards in Application Insights for: availability (ping / health), server requests, failures, response time.
+- Create a temporary demo account  
+- Automatically receive a cart  
+- Browse categories & products (with images)  
+- Add items to cart  
+- Create and view orders  
 
-## Definition of Done (example)
-- API endpoints working + tests pass
-- CI pipeline executes build/test/deploy
-- App deployed in Azure and reachable
-- Monitoring enabled (AI) and dashboard added
-- README + Scrum docs (backlog, sprint review, retrospective)
+All product data is stored **locally in an in-memory catalog**, ensuring reliability with no external API dependencies.
 
+---
+
+# 2. Features
+
+- Full-stack application (React + FastAPI)  
+- In-memory product catalog (always available)  
+- SQLite database for users, carts, and orders  
+- Product browsing with categories and images  
+- Automated CI/CD using Azure DevOps Pipelines  
+- Container deployment using Azure Web App for Containers  
+- Local development with hot reload (uvicorn + Vite)  
+
+---
+
+# 3. System Architecture
+
+```mermaid
+flowchart TB
+    subgraph Frontend
+        ReactApp["React App (Vite)"]
+    end
+
+    subgraph Backend
+        FastAPI["FastAPI Application"]
+        DB[(SQLite Database)]
+        Products["In-memory Product Catalog"]
+    end
+
+    subgraph Azure["Azure Cloud"]
+        ACR["Azure Container Registry"]
+        WebApp["Azure Web App (Container)"]
+        Pipeline["Azure DevOps Pipeline (CI/CD)"]
+    end
+
+    ReactApp -->|"Axios Requests"| FastAPI
+    FastAPI --> DB
+    FastAPI --> Products
+
+    Pipeline -->|Build & Push Docker Image| ACR
+    Pipeline -->|Deploy Container Image| WebApp
+    WebApp --> FastAPI
+
+# 4. Repository structure 
+Devopsfinalproject/
+│
+├── app/
+│   ├── main.py
+│   ├── database.py
+│   ├── models.py
+│   ├── schemas.py
+│   ├── services/
+│   │     └── external_products.py  
+│   └── routers/
+│         ├── products.py
+│         ├── users.py
+│         ├── cart.py
+│         └── orders.py
+│
+├── frontend/
+│   ├── src/App.jsx
+│   └── public/images/               
+│
+├── dockerfile
+├── requirements.txt
+├── azure-pipelines.yml
+└── README.md
+
+---
+
+# 5. Backend (FastAPI)
+
+The backend is a fully functional **FastAPI application** responsible for users, products, carts, and orders.  
+It uses an **SQLite database** for persistent storage and an **in-memory product catalog**, ensuring the webapp works even without external APIs.
+
+### 🔧 Backend Responsibilities
+
+- Create and store users  
+- Automatically assign a cart to each user  
+- Serve product categories  
+- Serve product lists with images  
+- Add items to cart  
+- Create orders from the cart  
+
+---
+
+# 5.1 Backend API Endpoints
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| **POST** | `/users/` | Create a new user |
+| **POST** | `/cart/{user_id}` | Create or fetch a cart |
+| **POST** | `/cart/{cart_id}/items` | Add product to cart |
+| **GET** | `/products/categories` | List all product categories |
+| **GET** | `/products/category/{category}` | List all products in a category |
+| **POST** | `/orders/{user_id}` | Create order from user cart |
+| **GET** | `/orders/user/{user_id}` | Get user order history |
+
+---
+
+# 6. Frontend (React + Vite)
+
+The frontend is a **React application** (Vite) that interacts with the backend via Axios.  
+It provides a clean UI with navigation and real-time updates for cart and orders.
+
+### Frontend Features
+
+- User creation + saved login  
+- Category selection  
+- Product grid with images + prices  
+- Add-to-cart functionality  
+- Order creation  
+- Cart and order views  
+- Dynamic UI state (loading, error messages, active tabs)
+
+### API Communication
+
+All requests use:
+
+```js
+const BACKEND = "http://127.0.0.1:8001";
+
+This ensures my local frontend talks to my local backend.
+
+# 7. Docker & Containerization
+
+The backend is fully containerized using Docker for consistency and portability.
+
+Dockerfile summary:
+- Based on python:3.12-slim
+- Installs all dependencies from requirements.txt
+- Uses gunicorn + uvicorn workers in production
+- Exposes port 8000
+- Azure uses this Dockerfile to build and run the container
+
+Dockerfile used in this project (shown in plain text, no code fencing):
+FROM python:3.12-slim
+WORKDIR /app
+COPY . .
+RUN pip install --no-cache-dir -r requirements.txt
+CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "app.main:app", "--bind", "0.0.0.0:8000"]
+
+Container Deployment Flow:
+1. Docker image is built in the CI pipeline
+2. Image is pushed to Azure Container Registry (ACR)
+3. Azure Web App pulls the container image
+4. Backend runs live in Azure, fully containerized
+
+
+# 8. CI/CD with Azure DevOps Pipelines
+
+This project uses a two-stage Azure DevOps pipeline: Build & Test, then Deploy.
+
+Continuous Integration (CI):
+- Install Python dependencies
+- Run pytest tests
+- Build Docker image
+- Push the image to Azure Container Registry (ACR)
+
+Continuous Deployment (CD):
+- Web App pulls the newly built image
+- Uses AzureWebAppContainer task for deployment
+- Zero-downtime container updates
+
+Azure deployment snippet (shown as plain text):
+- task: AzureWebAppContainer@1
+  inputs:
+    azureSubscription: '$(azureSubscription)'
+    appName: '$(webAppName)'
+    containers: '$(acrName).azurecr.io/$(imageName):$(Build.BuildId)'
+
+
+# 9. Running the Application Locally
+
+Start the backend (FastAPI):
+uvicorn app.main:app --reload --port 8001
+
+Backend URL:
+http://127.0.0.1:8001
+
+Start the frontend (React + Vite):
+npm install
+npm run dev
+
+Frontend URL:
+http://localhost:5173
+
+Local usage flow:
+1. Create a user
+2. Cart is automatically created
+3. Select a category
+4. Browse products with images
+5. Add items to cart
+6. Create an order
+7. View your orders
