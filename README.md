@@ -174,9 +174,8 @@ Container Deployment Flow:
 2. Image is pushed to Azure Container Registry (ACR)
 3. Azure Web App pulls the container image
 4. Backend runs live in Azure, fully containerized
-```
 
-# 8. CI/CD with Azure DevOps Pipelines 
+# 8. CI/CD with Azure DevOps Pipelines
 
 This project uses a two-stage Azure DevOps pipeline: **Build & Test**, then **Deploy**.
 
@@ -198,12 +197,15 @@ This project uses a two-stage Azure DevOps pipeline: **Build & Test**, then **De
     azureSubscription: '$(azureSubscription)'
     appName: '$(webAppName)'
     containers: '$(acrName).azurecr.io/$(imageName):$(Build.BuildId)'
----
+```
+
 
 # 9. Running the Application Locally
 
 ### Start the backend (FastAPI)
+```bash
 uvicorn app.main:app --reload --port 8001
+```
 
 Backend URL:  
 http://127.0.0.1:8001
@@ -211,8 +213,10 @@ http://127.0.0.1:8001
 ---
 
 ### Start the frontend (React + Vite)
+```bash
 npm install
 npm run dev
+```
 
 Frontend URL:  
 http://localhost:5173
