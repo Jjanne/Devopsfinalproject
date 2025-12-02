@@ -68,7 +68,10 @@ flowchart TB
     Pipeline -->|Deploy Container Image| WebApp
     WebApp --> FastAPI
 
+```
+
 # 4. Repository structure 
+```mermaid
 Devopsfinalproject/
 │
 ├── app/
@@ -93,10 +96,11 @@ Devopsfinalproject/
 ├── azure-pipelines.yml
 └── README.md
 
----
+```
 
 # 5. Backend (FastAPI)
 
+```mermaid
 The backend is a fully functional **FastAPI application** responsible for users, products, carts, and orders.  
 It uses an **SQLite database** for persistent storage and an **in-memory product catalog**, ensuring the webapp works even without external APIs.
 
@@ -109,10 +113,11 @@ It uses an **SQLite database** for persistent storage and an **in-memory product
 - Add items to cart  
 - Create orders from the cart  
 
----
+```
 
 # 5.1 Backend API Endpoints
 
+```mermaid
 | Method | Route | Description |
 |--------|-------|-------------|
 | **POST** | `/users/` | Create a new user |
@@ -123,10 +128,11 @@ It uses an **SQLite database** for persistent storage and an **in-memory product
 | **POST** | `/orders/{user_id}` | Create order from user cart |
 | **GET** | `/orders/user/{user_id}` | Get user order history |
 
----
+```
 
 # 6. Frontend (React + Vite)
 
+```mermaid
 The frontend is a **React application** (Vite) that interacts with the backend via Axios.  
 It provides a clean UI with navigation and real-time updates for cart and orders.
 
@@ -148,6 +154,7 @@ All requests use:
 const BACKEND = "http://127.0.0.1:8001";
 
 This ensures my local frontend talks to my local backend.
+```
 
 # 7. Docker & Containerization
 
@@ -172,10 +179,10 @@ Container Deployment Flow:
 2. Image is pushed to Azure Container Registry (ACR)
 3. Azure Web App pulls the container image
 4. Backend runs live in Azure, fully containerized
-
+```
 
 # 8. CI/CD with Azure DevOps Pipelines
-
+```mermaid
 This project uses a two-stage Azure DevOps pipeline: Build & Test, then Deploy.
 
 Continuous Integration (CI):
@@ -195,10 +202,10 @@ Azure deployment snippet (shown as plain text):
     azureSubscription: '$(azureSubscription)'
     appName: '$(webAppName)'
     containers: '$(acrName).azurecr.io/$(imageName):$(Build.BuildId)'
-
+```
 
 # 9. Running the Application Locally
-
+```mermaid
 Start the backend (FastAPI):
 uvicorn app.main:app --reload --port 8001
 
@@ -220,3 +227,4 @@ Local usage flow:
 5. Add items to cart
 6. Create an order
 7. View your orders
+```
