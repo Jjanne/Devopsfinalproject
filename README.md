@@ -231,3 +231,19 @@ http://localhost:5173
 5. Add items to cart  
 6. Create an order  
 7. View your orders  
+
+# 11. Testing 
+
+Automated tests are implemented using pytest.  
+To run tests locally:
+
+```bash
+pytest -q
+```
+
+The test covers:
+- Product endpoints
+- API availability
+- Basic health checks 
+
+---
