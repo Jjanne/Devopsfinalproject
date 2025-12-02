@@ -71,7 +71,7 @@ flowchart TB
 ```
 
 # 4. Repository structure 
-```mermaid
+```text
 Devopsfinalproject/
 │
 ├── app/
@@ -80,16 +80,16 @@ Devopsfinalproject/
 │   ├── models.py
 │   ├── schemas.py
 │   ├── services/
-│   │     └── external_products.py  
+│   │   └── external_products.py
 │   └── routers/
-│         ├── products.py
-│         ├── users.py
-│         ├── cart.py
-│         └── orders.py
+│       ├── products.py
+│       ├── users.py
+│       ├── cart.py
+│       └── orders.py
 │
 ├── frontend/
 │   ├── src/App.jsx
-│   └── public/images/               
+│   └── public/images/
 │
 ├── dockerfile
 ├── requirements.txt
@@ -100,11 +100,10 @@ Devopsfinalproject/
 
 # 5. Backend (FastAPI)
 
-```mermaid
 The backend is a fully functional **FastAPI application** responsible for users, products, carts, and orders.  
 It uses an **SQLite database** for persistent storage and an **in-memory product catalog**, ensuring the webapp works even without external APIs.
 
-### 🔧 Backend Responsibilities
+### Backend Responsibilities
 
 - Create and store users  
 - Automatically assign a cart to each user  
@@ -113,11 +112,9 @@ It uses an **SQLite database** for persistent storage and an **in-memory product
 - Add items to cart  
 - Create orders from the cart  
 
-```
 
 # 5.1 Backend API Endpoints
 
-```mermaid
 | Method | Route | Description |
 |--------|-------|-------------|
 | **POST** | `/users/` | Create a new user |
@@ -128,13 +125,11 @@ It uses an **SQLite database** for persistent storage and an **in-memory product
 | **POST** | `/orders/{user_id}` | Create order from user cart |
 | **GET** | `/orders/user/{user_id}` | Get user order history |
 
-```
 
 # 6. Frontend (React + Vite)
 
-```mermaid
-The frontend is a **React application** (Vite) that interacts with the backend via Axios.  
-It provides a clean UI with navigation and real-time updates for cart and orders.
+The frontend is a **React application (Vite)** that interacts with the backend using Axios.  
+It provides a clean UI with navigation and real-time updates for cart and order activity.
 
 ### Frontend Features
 
@@ -144,17 +139,17 @@ It provides a clean UI with navigation and real-time updates for cart and orders
 - Add-to-cart functionality  
 - Order creation  
 - Cart and order views  
-- Dynamic UI state (loading, error messages, active tabs)
+- Dynamic UI state (loading indicators, errors, active tab highlighting)
 
 ### API Communication
 
-All requests use:
+All frontend requests use:
 
 ```js
 const BACKEND = "http://127.0.0.1:8001";
-
-This ensures my local frontend talks to my local backend.
 ```
+
+This ensures the local frontend communicates with the local backend correctly when developing.
 
 # 7. Docker & Containerization
 
@@ -181,50 +176,54 @@ Container Deployment Flow:
 4. Backend runs live in Azure, fully containerized
 ```
 
-# 8. CI/CD with Azure DevOps Pipelines
-```mermaid
-This project uses a two-stage Azure DevOps pipeline: Build & Test, then Deploy.
+# 8. CI/CD with Azure DevOps Pipelines 
 
-Continuous Integration (CI):
-- Install Python dependencies
-- Run pytest tests
-- Build Docker image
-- Push the image to Azure Container Registry (ACR)
+This project uses a two-stage Azure DevOps pipeline: **Build & Test**, then **Deploy**.
 
-Continuous Deployment (CD):
-- Web App pulls the newly built image
-- Uses AzureWebAppContainer task for deployment
-- Zero-downtime container updates
+### Continuous Integration (CI)
+- Install Python dependencies  
+- Run pytest tests  
+- Build Docker image  
+- Push image to **Azure Container Registry (ACR)**  
 
-Azure deployment snippet (shown as plain text):
+### Continuous Deployment (CD)
+- Azure Web App pulls the newly built image  
+- Uses **AzureWebAppContainer** task for deployment  
+- Zero-downtime container updates  
+
+### Azure deployment snippet (plain text)
+```yaml
 - task: AzureWebAppContainer@1
   inputs:
     azureSubscription: '$(azureSubscription)'
     appName: '$(webAppName)'
     containers: '$(acrName).azurecr.io/$(imageName):$(Build.BuildId)'
-```
+---
 
-# 9. Running the Application Locally
-```mermaid
-Start the backend (FastAPI):
+# 9. Running the Application Locally
+
+### Start the backend (FastAPI)
 uvicorn app.main:app --reload --port 8001
 
-Backend URL:
+Backend URL:  
 http://127.0.0.1:8001
 
-Start the frontend (React + Vite):
+---
+
+### Start the frontend (React + Vite)
 npm install
 npm run dev
 
-Frontend URL:
+Frontend URL:  
 http://localhost:5173
 
-Local usage flow:
-1. Create a user
-2. Cart is automatically created
-3. Select a category
-4. Browse products with images
-5. Add items to cart
-6. Create an order
-7. View your orders
-```
+---
+
+### Local usage flow
+1. Create a user  
+2. Cart is automatically created  
+3. Select a category  
+4. Browse products with images  
+5. Add items to cart  
+6. Create an order  
+7. View your orders  
